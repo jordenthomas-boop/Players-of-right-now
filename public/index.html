@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Drive</title>
+  <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png">
+
+  <style>
+    body { margin:0; background:#0b0b0b; font-family:sans-serif; }
+    #bar { display:flex; padding:10px; background:#111; }
+    input { flex:1; padding:10px; border:none; border-radius:6px; }
+    button { margin-left:5px; padding:10px; border:none; border-radius:6px; background:#3d5afe; color:#fff; }
+    iframe { width:100%; height:calc(100vh - 50px); border:none; }
+  </style>
+</head>
+
+<body>
+
+<div id="bar">
+  <input id="url" placeholder="Search or enter URL">
+  <button onclick="go()">Go</button>
+  <button onclick="cloak()">Cloak</button>
+</div>
+
+<iframe id="frame"></iframe>
+
+<script src="/uv/uv.bundle.js"></script>
+<script src="/uv/uv.config.js"></script>
+
+<script>
+function format(input) {
+  try {
+    return new URL(input).toString();
+  } catch {
+    return "https://www.google.com/search?q=" + encodeURIComponent(input);
+  }
+}
+
+async function go() {
+  const input = document.getElementById("url").value;
+  if (!input) return;
+
+  if ("serviceWorker" in navigator) {
+    await navigator.serviceWorker.register("/uv/uv.sw.js", {
+      scope: "/uv/service/"
+    });
+  }
+
+  const url = format(input);
+  const encoded = __uv$config.encodeUrl(url);
+  const final = __uv$config.prefix + encoded;
+
+  document.getElementById("frame").src = final;
+}
+
+function cloak() {
+  const win = window.open("about:blank", "_blank");
+
+  win.document.write(`
+    <html>
+    <head>
+      <title>Google Drive</title>
+      <link rel="icon" href="https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png">
+      <style>body{margin:0}</style>
+    </head>
+    <body>
+      <iframe src="${location.href}" style="width:100%;height:100%;border:none;"></iframe>
+    </body>
+    </html>
+  `);
+}
+</script>
+
+</body>
+</html>
